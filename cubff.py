@@ -19,13 +19,16 @@ from bin import cubff
 INIT_SEED = 0
 THRESHOLD_ENTROPY = 3
 
+NUM_PROGRAMS = 1024 # * 1024
+MAX_EPOCHS = 32*1024*1024*1024 / NUM_PROGRAMS
+
 
 def StandardParams():
   params = cubff.SimulationParams()
-  params.num_programs = 131072
+  params.num_programs = NUM_PROGRAMS
   params.seed = INIT_SEED
   params.load_from = sys.argv[1]
-  params.mutation_prob = int(round(0.001*(1<<30)))
+  params.mutation_prob = int(round(0.0001*(1<<30)))
   return params
 
 def find_threshold_epoch(params):
@@ -41,15 +44,16 @@ def find_threshold_epoch(params):
     epochs = state.epoch
     nonlocal ok
     ok = state.higher_entropy > THRESHOLD_ENTROPY
-    return ok or state.epoch > 32*1024 + initial_epoch
+    return ok or state.epoch > MAX_EPOCHS + initial_epoch
   
-  cubff.RunSimulation("bff_noheads", params, None, callback)
+  cubff.RunSimulation("bff", params, None, callback)
 
   if ok:
     return epochs
   return None
 
 params = StandardParams()
+print('seed,stop_epoch')
 for s in range(100):
   params.seed = INIT_SEED + s
-  print(s, find_threshold_epoch(params))
+  print(s, ',', find_threshold_epoch(params))
