@@ -371,10 +371,12 @@ int main(int argc, char** argv) {
         }
       }
       int soup_bytes_diff = 0;
+      int soup_new_distr[256] = { 0 };
       if (!prev_soup.empty()) {
         for(int i = 0; i < state.soup.size(); i++) {
           if (state.soup[i] != prev_soup[i]) {
             soup_bytes_diff++;
+	    soup_new_distr[state.soup[i]]++;
           }
         }
       }
@@ -421,13 +423,19 @@ int main(int argc, char** argv) {
 
       if (logfile) {
         if (params.eval_selfrep) {
-          fprintf(logfile, "%zu,%zu,%zu,%f,%d,%d\n", state.epoch,
+          fprintf(logfile, "%zu,%zu,%zu,%f,%d,%d", state.epoch,
                   state.brotli_size, state.soup.size() / kSingleTapeSize,
                   state.higher_entropy, soup_bytes_diff, repl_count);
+	  for(int i=0;i<256;i++)
+		  fprintf(logfile, ",%d", soup_new_distr[i]);
+	  fprintf(logfile, "\n");
         } else {
-          fprintf(logfile, "%zu,%zu,%zu,%f,%d\n", state.epoch, state.brotli_size,
+          fprintf(logfile, "%zu,%zu,%zu,%f,%d", state.epoch, state.brotli_size,
                   state.soup.size() / kSingleTapeSize, state.higher_entropy,
                   soup_bytes_diff);
+	  for(int i=0;i<256;i++)
+		  fprintf(logfile, ",%d", soup_new_distr[i]);
+	  fprintf(logfile, "\n");
         }
         fflush(logfile);
       }
